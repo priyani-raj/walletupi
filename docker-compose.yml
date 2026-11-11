@@ -1,0 +1,24 @@
+# docker compose up --build   ->  API on http://localhost:8080 backed by MySQL
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: wallet
+      MYSQL_ROOT_PASSWORD: secret
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mysql
+      DB_URL: jdbc:mysql://db:3306/wallet
+      DB_USER: root
+      DB_PASS: secret
+    ports:
+      - "8080:8080"
